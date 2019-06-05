@@ -22,6 +22,8 @@ namespace db
 
         using ArrayResult = std::vector<Key>;
 
+        using HashResult = std::map<std::string, std::string>;
+
     private:
 
         enum RedisGetType
@@ -70,10 +72,6 @@ namespace db
         RedisConn(const char* ip, uint16_t port, const char* requirepass = nullptr);
 
         ~RedisConn();
-
-    public:
-
-        RedisReply ExecuteRawCommand(const char* command);
 
     public:
 
@@ -131,10 +129,9 @@ namespace db
         
         bool rpush(const Key& key, const std::string& val);
 
-        int linsert(const Key& key, const std::string& insertVal, const std::string& pivotval, bool bIsBefore);    
+        int  linsert(const Key& key, const std::string& insertVal, const std::string& pivotval, bool bIsBefore);    
 
         bool lset(const Key& key, int index, const std::string& val);
-
 
     public:
 
@@ -181,6 +178,53 @@ namespace db
         bool smove(const Key& src, const Key& dst, const std::string& val);
 
         bool sop(const Key& lhs, const Key& rhs, const char* fmt, ArrayResult* result);
+
+    public:
+
+        template<typename T1, typename T2>
+        bool HSet(const Key& key, const T1& field, const T2& val);
+
+        template<typename T>
+        bool HGet(const Key& key, const T& field, std::string* val);
+
+        template<typename T>
+        bool HDel(const Key& key, const T& field);
+
+        template<typename T>
+        bool HExists(const Key& key, const T& field);
+
+        template<typename T>
+        int  HStrlen(const Key& key, const T& field);
+
+        template<typename T>
+        int  HIncrby(const Key& key, const T& field, int val);
+
+        template<typename T>
+        float HIncrbyFloat(const Key& key, const T& field, float val);
+
+        int  HLen(const Key& key);
+
+        bool HKeys(const Key& key, ArrayResult* result);
+
+        bool HVals(const Key& key, ArrayResult* result);
+
+        bool HGetAll(const Key& key, HashResult* result);
+
+    private:
+
+        bool hset(const Key& key, const Key& field, const std::string& val);
+
+        bool hget(const Key& key, const Key& field, std::string* val);
+
+        bool hdel(const Key& key, const Key& field);
+
+        bool hexists(const Key& key, const Key& field);
+
+        int  hstrlen(const Key& key, const Key& field);
+
+        int  hincrby(const Key& key, const Key& field, int val);
+
+        float hincrbyfloat(const Key& key, const Key& field, float val);
 
     private:
 
@@ -247,6 +291,48 @@ namespace db
     bool RedisConn::SMove(const Key& srcKey, const Key& destKey, const T& val)
     {
         return smove(srcKey, destKey, ToStdString(val));
+    }
+
+    template<typename T1, typename T2>
+    bool RedisConn::HSet(const Key& key, const T1& field, const T2& val)
+    {
+        return hset(key, ToStdString(field), ToStdString(val));
+    }
+
+    template<typename T>
+    bool RedisConn::HGet(const Key& key, const T& field, std::string* val)
+    {
+        return hget(key, ToStdString(field), val);
+    }
+
+    template<typename T>
+    bool RedisConn::HDel(const Key& key, const T& field)
+    {
+        return hdel(key, ToStdString(field));
+    }
+
+    template<typename T>
+    bool RedisConn::HExists(const Key& key, const T& field)
+    {
+        return hexists(key, ToStdString(field));
+    }
+
+    template<typename T>
+    int  RedisConn::HStrlen(const Key& key, const T& field)
+    {
+        return hstrlen(key, ToStdString(field));
+    }
+
+    template<typename T>
+    int  RedisConn::HIncrby(const Key& key, const T& field, int val)
+    {
+        return hincrby(key, ToStdString(field), val);
+    }
+
+    template<typename T>
+    float  RedisConn::HIncrbyFloat(const Key& key, const T& field, float val)
+    {
+        return hincrbyfloat(key, ToStdString(field), val);
     }
 }
 

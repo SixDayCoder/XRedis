@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 namespace db
 {
@@ -22,9 +23,9 @@ namespace db
 
         bool IsVaild() const;
 
-        int Type() const;
+        int  Type() const;
 
-        int Integer() const;
+        int  Integer() const;
 
         std::string ErrorMsg() const;
         
@@ -39,6 +40,8 @@ namespace db
         bool ParseStdString(std::string* val);
 
         bool ParseArray(std::vector<std::string>* val);
+
+        bool ParseHash(std::map<std::string, std::string>* val);
 
     private:
 
