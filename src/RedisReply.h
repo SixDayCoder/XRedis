@@ -13,6 +13,32 @@ namespace db
     {
     public:
 
+        using ArrayResult = std::vector<std::string>;
+
+        using HashResult = std::map<std::string, std::string>;
+
+        using ZSetResult = std::vector<std::string>;
+
+        struct ZSetWithScoreResult
+        {
+            std::vector<std::string> Members;
+            std::vector<std::string> Scores;
+
+            int size() {
+                if( Members.size() != Scores.size() ) {
+                    return -1;
+                }
+                return Members.size();
+            }
+
+            void clear() {
+                Members.clear();
+                Scores.clear();
+            }
+        };   
+
+    public:
+
         explicit RedisReply(void* reply);
 
         explicit RedisReply(redisReply* reply = nullptr);
@@ -42,6 +68,10 @@ namespace db
         bool ParseArray(std::vector<std::string>* val);
 
         bool ParseHash(std::map<std::string, std::string>* val);
+
+        bool ParseZSet(std::vector<std::string>* val);
+
+        bool ParseZSetWithScore(ZSetWithScoreResult* val);
 
     private:
 

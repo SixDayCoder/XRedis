@@ -57,7 +57,7 @@ namespace db
 
     bool RedisConn::set(const Key& key, const std::string& val)
     {
-        const char* fmt = "del %s"; 
+        const char* fmt = "set %s %s"; 
         REDIS_COMMIT_TWO_PARAM_COMMAND(fmt, key.c_str(), val.c_str());
         return reply.IsVaild();
     }
@@ -141,7 +141,7 @@ namespace db
         return reply.Integer();
     }
 
-    bool RedisConn::LRange(const Key& key, int start, int end, ArrayResult* result)
+    bool RedisConn::LRange(const Key& key, int start, int end, RedisReply::ArrayResult* result)
     {
         if(result == nullptr) { return false; }
         result->clear();
@@ -201,7 +201,7 @@ namespace db
         return reply.Integer() > 0;
     }
 
-    bool RedisConn::SMembers(const Key& key, ArrayResult* result)
+    bool RedisConn::SMembers(const Key& key, RedisReply::ArrayResult* result)
     {
         if(result == nullptr) { return false; }
         result->clear();
@@ -250,26 +250,26 @@ namespace db
         return reply.Integer();
     }
 
-    bool RedisConn::sop(const Key& lhs, const Key& rhs, const char* fmt, ArrayResult* result)
+    bool RedisConn::sop(const Key& lhs, const Key& rhs, const char* fmt, RedisReply::ArrayResult* result)
     {
         result->clear();
         REDIS_COMMIT_TWO_PARAM_COMMAND(fmt, lhs.c_str(), rhs.c_str());
         return reply.ParseArray(result);
     }
 
-    bool RedisConn::SInter(const Key& lhs, const Key& rhs, ArrayResult* result)
+    bool RedisConn::SInter(const Key& lhs, const Key& rhs, RedisReply::ArrayResult* result)
     {
         if(result == nullptr) { return false; }
         return sop(lhs, rhs, "sinter %s %s", result);
     }
 
-    bool RedisConn::SUnion(const Key& lhs, const Key& rhs, ArrayResult* result)
+    bool RedisConn::SUnion(const Key& lhs, const Key& rhs, RedisReply::ArrayResult* result)
     {
         if(result == nullptr) { return false; }
         return sop(lhs, rhs, "sunion %s %s", result);
     }
 
-    bool RedisConn::SDiff(const Key& lhs, const Key& rhs, ArrayResult* result)
+    bool RedisConn::SDiff(const Key& lhs, const Key& rhs, RedisReply::ArrayResult* result)
     {
         if(result == nullptr) { return false; }
         return sop(lhs, rhs, "sdiff %s %s", result);
@@ -283,7 +283,7 @@ namespace db
         return reply.ParseStdString(val);
     }
     
-    bool RedisConn::SRandomMember(const Key& key, int count, ArrayResult* val)
+    bool RedisConn::SRandomMember(const Key& key, int count, RedisReply::ArrayResult* val)
     {
         if(val == nullptr) { return false; }
         val->clear();
@@ -335,25 +335,28 @@ namespace db
         return reply.Integer();
     }
 
-    bool RedisConn::HKeys(const Key& key, ArrayResult* result)
+    bool RedisConn::HKeys(const Key& key, RedisReply::ArrayResult* result)
     {
         if(result == nullptr) { return false; }
+        result->clear();
         const char* fmt = "hkeys %s";
         REDIS_COMMIT_ONE_PARAM_COMMAND(fmt, key.c_str());
         return reply.ParseArray(result);
     }
 
-    bool RedisConn::HVals(const Key& key, ArrayResult* result)
+    bool RedisConn::HVals(const Key& key, RedisReply::ArrayResult* result)
     {
         if(result == nullptr) { return false; }
+        result->clear();
         const char* fmt = "hvals %s";
         REDIS_COMMIT_ONE_PARAM_COMMAND(fmt, key.c_str());
         return reply.ParseArray(result);
     }
 
-    bool RedisConn::HGetAll(const Key& key, HashResult* result)
+    bool RedisConn::HGetAll(const Key& key, RedisReply::HashResult* result)
     {
         if(result == nullptr) { return false; }
+        result->clear();
         const char* fmt = "hgetall %s";
         REDIS_COMMIT_ONE_PARAM_COMMAND(fmt, key.c_str());
         return reply.ParseHash(result);
@@ -373,5 +376,129 @@ namespace db
         float v = 0.0f;
         bool  b = reply.ParseFloat(&v);
         return b ? v : 0.0f;
+    }
+
+    bool RedisConn::zadd(const Key& key, int score, const std::string& member)
+    {
+        const char* fmt = "zadd %s %d %s";
+        REDIS_COMMIT_THREE_PARAM_COMMAND(fmt, key.c_str(), score, member.c_str());
+        return reply.IsVaild();
+    }
+
+    bool RedisConn::zadd(const Key& key, float score, const std::string& member)
+    {
+        const char* fmt = "zadd %s %f %s";
+        REDIS_COMMIT_THREE_PARAM_COMMAND(fmt, key.c_str(), score, member.c_str());
+        return reply.IsVaild();
+    }
+
+    std::string RedisConn::zscore(const Key& key, const std::string& member)
+    {
+        const char* fmt = "zscore %s %s";
+        REDIS_COMMIT_TWO_PARAM_COMMAND(fmt, key.c_str(), member.c_str());
+        float v = 0.0f;
+        reply.ParseFloat(&v);
+        std::string val;
+        return reply.ParseStdString(&val) ? val : "";
+    }
+
+    std::string RedisConn::zincrby(const Key& key, const std::string& member, float score)
+    {
+        const char* fmt = "zincrby %s %f %s";
+        REDIS_COMMIT_THREE_PARAM_COMMAND(fmt, key.c_str(), score, member.c_str());
+        std::string val;
+        return reply.ParseStdString(&val) ? val : "";
+    }
+
+    int RedisConn::ZCard(const Key& key)
+    {
+        const char* fmt = "zcard %s";
+        REDIS_COMMIT_ONE_PARAM_COMMAND(fmt, key.c_str());
+        return reply.Integer();
+    }
+
+    int RedisConn::ZCount(const Key& key, int min, int max)
+    {
+        const char* fmt = "zcount %s %d %d";
+        REDIS_COMMIT_THREE_PARAM_COMMAND(fmt, key.c_str(), min, max);
+        return reply.Integer();
+    }
+
+    int RedisConn::ZCount(const Key& key, float min, float max)
+    {
+        const char* fmt = "zcount %s %f %f";
+        REDIS_COMMIT_THREE_PARAM_COMMAND(fmt, key.c_str(), min, max);
+        return reply.Integer();
+    }
+
+    bool RedisConn::ZRange(const Key& key, int start, int end, RedisReply::ZSetResult* result)
+    {
+        if(result == nullptr) { return false; }
+        result->clear();
+        const char* fmt = "zrange %s %d %d";
+        REDIS_COMMIT_THREE_PARAM_COMMAND(fmt, key.c_str(), start, end);
+        return reply.ParseZSet(result);
+    }
+
+    bool RedisConn::ZRangeWithScore(const Key& key, int start, int end, RedisReply::ZSetWithScoreResult* result)
+    {
+        if(result == nullptr) { return false; }
+        result->clear();
+        const char* fmt = "zrange %s %d %d withscores";
+        REDIS_COMMIT_THREE_PARAM_COMMAND(fmt, key.c_str(), start, end);
+        return reply.ParseZSetWithScore(result);
+    }
+
+    bool RedisConn::ZRevRange(const Key& key, int start, int end, RedisReply::ZSetResult* result)
+    {
+        if(result == nullptr) { return false; }
+        result->clear();
+        const char* fmt = "zrevrange %s %d %d";
+        REDIS_COMMIT_THREE_PARAM_COMMAND(fmt, key.c_str(), start, end);
+        return reply.ParseZSet(result);
+    }
+
+    bool RedisConn::ZRevRangeWithScore(const Key& key, int start, int end, RedisReply::ZSetWithScoreResult* result)
+    {
+        if(result == nullptr) { return false; }
+        result->clear();
+        const char* fmt = "zrevrange %s %d %d withscores";
+        REDIS_COMMIT_THREE_PARAM_COMMAND(fmt, key.c_str(), start, end);
+        return reply.ParseZSetWithScore(result);
+    }
+
+    int  RedisConn::zrank(const Key& key, const std::string& member)
+    {
+        const char* fmt = "zrank %s %s";
+        REDIS_COMMIT_TWO_PARAM_COMMAND(fmt, key.c_str(), member.c_str());
+        return reply.Integer();
+    }
+
+    int  RedisConn::zrevrank(const Key& key, const std::string& member)
+    {
+        const char* fmt = "zrevrank %s %s";
+        REDIS_COMMIT_TWO_PARAM_COMMAND(fmt, key.c_str(), member.c_str());
+        return reply.Integer();
+    }
+
+    int  RedisConn::zrem(const Key& key, const std::string& member)
+    {
+        const char* fmt = "zrem %s %s";
+        REDIS_COMMIT_TWO_PARAM_COMMAND(fmt, key.c_str(), member.c_str());
+        return reply.Integer();
+    }
+
+    int  RedisConn::ZRemRangeByRank(const Key& key, int start, int end)
+    {
+        const char* fmt = "zremrangebyrank %s %d %d";
+        REDIS_COMMIT_THREE_PARAM_COMMAND(fmt, key.c_str(), start, end);
+        return reply.Integer();
+    }
+
+    int  RedisConn::ZRemRangeByScore(const Key& key, float min, float max)
+    {
+        const char* fmt = "zremrangebyscore %s %f %f";
+        REDIS_COMMIT_THREE_PARAM_COMMAND(fmt, key.c_str(), min, max);
+        return reply.Integer();
     }
 }

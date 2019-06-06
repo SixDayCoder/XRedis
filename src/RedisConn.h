@@ -18,11 +18,7 @@ namespace db
     {
     public:
 
-        using Key = std::string;
-
-        using ArrayResult = std::vector<Key>;
-
-        using HashResult = std::map<std::string, std::string>;
+        using Key = std::string; 
 
     private:
 
@@ -76,10 +72,17 @@ namespace db
     public:
 
         template<typename T>
-        bool Set(const Key& key, const T& v);
+        bool Set(const Key& key, const T& v)
+        {
+            return set(key, ToStdString(v));
+        }
 
         template<typename T>
-        bool Get(const Key& key, T* val);
+        bool Get(const Key& key, T* val)
+        {
+            if(val == nullptr) { return false; }
+            return get(key, val, gettype(*val));
+        }
 
         bool Del(const Key& key);
 
@@ -92,16 +95,28 @@ namespace db
      public:
 
         template<typename T>
-        bool LPush(const Key& key, const T& v);
+        bool LPush(const Key& key, const T& v)
+        {
+            return lpush(key, ToStdString(v));
+        }
 
         template<typename T>
-        bool RPush(const Key& key, const T& v);
+        bool RPush(const Key& key, const T& v)
+        {
+            return rpush(key, ToStdString(v));
+        }
 
         template<typename T1, typename T2>
-        int LInsert(const Key& key, const T1& insertVal, const T2& pivotVal, bool bIsBefore = true);
+        int LInsert(const Key& key, const T1& insertVal, const T2& pivotVal, bool bIsBefore = true)
+        {
+             return linsert(key, ToStdString(insertVal), ToStdString(pivotVal), bIsBefore);
+        }
 
         template<typename T>
-        bool LSet(const Key& key, int index, const T& val);
+        bool LSet(const Key& key, int index, const T& val)
+        {
+            return lset(key, index, ToStdString(val));
+        }
 
         bool LPop(const Key& key, std::string* val);
 
@@ -113,7 +128,7 @@ namespace db
 
         int  LLen(const Key& key);
 
-        bool LRange(const Key& key, int start, int end, ArrayResult* result);
+        bool LRange(const Key& key, int start, int end, RedisReply::ArrayResult* result);
 
         bool LIndex(const Key& key, int index, std::string* result);
 
@@ -136,18 +151,30 @@ namespace db
     public:
 
         template<typename T>
-        bool SAdd(const Key& key, const T& val);
+        bool SAdd(const Key& key, const T& val)
+        {
+            return sadd(key, ToStdString(val));
+        }
 
         template<typename T>
-        bool SIsSMemeber(const Key& key, const T& val);
+        bool SIsSMemeber(const Key& key, const T& val)
+        {
+            return sissmemeber(key, ToStdString(val));
+        }
 
         template<typename T>
-        bool SRem(const Key& key, const T& val);
+        bool SRem(const Key& key, const T& val)
+        {
+            return srem(key, ToStdString(val));
+        }
 
         template<typename T>
-        bool SMove(const Key& srcKey, const Key& destKey, const T& val);
+        bool SMove(const Key& srcKey, const Key& destKey, const T& val)
+        {
+            return smove(srcKey, destKey, ToStdString(val));
+        }
 
-        bool SMembers(const Key& key, ArrayResult* result);
+        bool SMembers(const Key& key, RedisReply::ArrayResult* result);
 
         bool SPop(const Key& key);
 
@@ -155,15 +182,15 @@ namespace db
 
         int  SCard(const Key& key);
 
-        bool SInter(const Key& lhs, const Key& rhs, ArrayResult* result);
+        bool SInter(const Key& lhs, const Key& rhs, RedisReply::ArrayResult* result);
 
-        bool SUnion(const Key& lhs, const Key& rhs, ArrayResult* result);
+        bool SUnion(const Key& lhs, const Key& rhs, RedisReply::ArrayResult* result);
 
-        bool SDiff(const Key& lhs, const Key& rhs, ArrayResult* result);
+        bool SDiff(const Key& lhs, const Key& rhs, RedisReply::ArrayResult* result);
 
         bool SRandomMember(const Key& key, std::string* val);
 
-        bool SRandomMember(const Key& key, int count, ArrayResult* val);
+        bool SRandomMember(const Key& key, int count, RedisReply::ArrayResult* val);
 
     private:
 
@@ -177,38 +204,59 @@ namespace db
 
         bool smove(const Key& src, const Key& dst, const std::string& val);
 
-        bool sop(const Key& lhs, const Key& rhs, const char* fmt, ArrayResult* result);
+        bool sop(const Key& lhs, const Key& rhs, const char* fmt, RedisReply::ArrayResult* result);
 
     public:
 
         template<typename T1, typename T2>
-        bool HSet(const Key& key, const T1& field, const T2& val);
+        bool HSet(const Key& key, const T1& field, const T2& val)
+        {
+            return hset(key, ToStdString(field), ToStdString(val));
+        }
 
         template<typename T>
-        bool HGet(const Key& key, const T& field, std::string* val);
+        bool HGet(const Key& key, const T& field, std::string* val)
+        {
+            return hget(key, ToStdString(field), val);
+        }
 
         template<typename T>
-        bool HDel(const Key& key, const T& field);
+        bool HDel(const Key& key, const T& field)
+        {
+            return hdel(key, ToStdString(field));
+        }
 
         template<typename T>
-        bool HExists(const Key& key, const T& field);
+        bool HExists(const Key& key, const T& field)
+        {
+            return hexists(key, ToStdString(field));
+        }
 
         template<typename T>
-        int  HStrlen(const Key& key, const T& field);
+        int  HStrlen(const Key& key, const T& field)
+        {
+            return hstrlen(key, ToStdString(field));
+        }
 
         template<typename T>
-        int  HIncrby(const Key& key, const T& field, int val);
+        int  HIncrby(const Key& key, const T& field, int val)
+        {
+            return hincrby(key, ToStdString(field), val);
+        }
 
         template<typename T>
-        float HIncrbyFloat(const Key& key, const T& field, float val);
+        float HIncrbyFloat(const Key& key, const T& field, float val)
+        {
+            return hincrbyfloat(key, ToStdString(field), val);
+        }
 
         int  HLen(const Key& key);
 
-        bool HKeys(const Key& key, ArrayResult* result);
+        bool HKeys(const Key& key, RedisReply::ArrayResult* result);
 
-        bool HVals(const Key& key, ArrayResult* result);
+        bool HVals(const Key& key, RedisReply::ArrayResult* result);
 
-        bool HGetAll(const Key& key, HashResult* result);
+        bool HGetAll(const Key& key, RedisReply::HashResult* result);
 
     private:
 
@@ -226,114 +274,88 @@ namespace db
 
         float hincrbyfloat(const Key& key, const Key& field, float val);
 
+    public:
+
+        template<typename T>
+        bool ZAdd(const Key& key, int score, const T& member)
+        {
+            return zadd(key, score, ToStdString(member));
+        }
+
+        template<typename T>
+        bool ZAdd(const Key& key, float score, const T& member)
+        {
+            return zadd(key, score, ToStdString(member));
+        }
+
+        template<typename T>
+        std::string ZScore(const Key& key, const T& member)
+        {
+            return zscore(key, ToStdString(member));
+        }
+
+        template<typename T>
+        std::string ZIncrby(const Key& key, const T& member, float score)
+        {
+            return zincrby(key, ToStdString(member), score);
+        }
+
+        template<typename T>
+        int ZRank(const Key& key, const T& member)
+        {
+            return zrank(key, ToStdString(member));
+        }
+
+        template<typename T>
+        int ZRevRank(const Key& key, const T& member)
+        {
+            return zrevrank(key, ToStdString(member));
+        }
+
+        template<typename T>
+        int ZRem(const Key& key, const T& member)
+        {
+            return zrem(key, ToStdString(member));
+        }
+
+        int  ZCard(const Key& key);
+
+        int  ZCount(const Key& key, int min, int max);
+
+        int  ZCount(const Key& key, float min, float max);
+
+        bool ZRange(const Key& key, int start, int end, RedisReply::ZSetResult* result);
+
+        bool ZRangeWithScore(const Key& key, int start, int end, RedisReply::ZSetWithScoreResult* result);
+
+        bool ZRevRange(const Key& key, int start, int end, RedisReply::ZSetResult* result);
+
+        bool ZRevRangeWithScore(const Key& key, int start, int end, RedisReply::ZSetWithScoreResult* result);
+
+        int  ZRemRangeByRank(const Key& key, int start, int end);
+
+        int  ZRemRangeByScore(const Key& key, float min, float max);
+
+    private:
+
+        bool  zadd(const Key& key, int score, const std::string& member);
+
+        bool  zadd(const Key& key, float score, const std::string& member);
+
+        std::string zscore(const Key& key, const std::string& member);
+
+        std::string zincrby(const Key& key, const std::string& member, float score);
+
+        int   zrank(const Key& key, const std::string& member);
+
+        int   zrevrank(const Key& key, const std::string& member);
+
+        int   zrem(const Key& key, const std::string& member);
+
     private:
 
         redisContext* m_RedisContext;
-
     };
-
-    template<typename T>
-    bool RedisConn::Set(const Key& key, const T& v)
-    {
-        return set(key, ToStdString(v));
-    }
-
-    template<typename T>
-    bool RedisConn::Get(const Key& key, T* val)
-    {
-        if(val == nullptr) { return false; }
-        return get(key, val, gettype(*val));
-    }
-
-    template<typename T>
-    bool RedisConn::LPush(const Key& key, const T& v)
-    {
-        return lpush(key, ToStdString(v));
-    }
-
-    template<typename T>
-    bool RedisConn::RPush(const Key& key, const T& v)
-    {
-        return rpush(key, ToStdString(v));
-    }
-
-    template<typename T1, typename T2>
-    int RedisConn::LInsert(const Key& key, const T1& insertVal, const T2& pivotVal, bool bIsBefore)
-    {
-        return linsert(key, ToStdString(insertVal), ToStdString(pivotVal), bIsBefore);
-    }
-
-    template<typename T>
-    bool RedisConn::LSet(const Key& key, int index, const T& val)
-    {
-        return lset(key, index, ToStdString(val));
-    }
-
-    template<typename T>
-    bool RedisConn::SAdd(const Key& key, const T& val)
-    {
-        return sadd(key, ToStdString(val));
-    }
-
-    template<typename T>
-    bool RedisConn::SIsSMemeber(const Key& key, const T& val)
-    {
-        return sissmemeber(key, ToStdString(val));
-    }
-
-    template<typename T>
-    bool RedisConn::SRem(const Key& key, const T& val)
-    {
-        return srem(key, ToStdString(val));
-    }
-
-    template<typename T>
-    bool RedisConn::SMove(const Key& srcKey, const Key& destKey, const T& val)
-    {
-        return smove(srcKey, destKey, ToStdString(val));
-    }
-
-    template<typename T1, typename T2>
-    bool RedisConn::HSet(const Key& key, const T1& field, const T2& val)
-    {
-        return hset(key, ToStdString(field), ToStdString(val));
-    }
-
-    template<typename T>
-    bool RedisConn::HGet(const Key& key, const T& field, std::string* val)
-    {
-        return hget(key, ToStdString(field), val);
-    }
-
-    template<typename T>
-    bool RedisConn::HDel(const Key& key, const T& field)
-    {
-        return hdel(key, ToStdString(field));
-    }
-
-    template<typename T>
-    bool RedisConn::HExists(const Key& key, const T& field)
-    {
-        return hexists(key, ToStdString(field));
-    }
-
-    template<typename T>
-    int  RedisConn::HStrlen(const Key& key, const T& field)
-    {
-        return hstrlen(key, ToStdString(field));
-    }
-
-    template<typename T>
-    int  RedisConn::HIncrby(const Key& key, const T& field, int val)
-    {
-        return hincrby(key, ToStdString(field), val);
-    }
-
-    template<typename T>
-    float  RedisConn::HIncrbyFloat(const Key& key, const T& field, float val)
-    {
-        return hincrbyfloat(key, ToStdString(field), val);
-    }
 }
 
 #endif

@@ -25,20 +25,14 @@ namespace db
 
     bool RedisReply::IsVaild() const
     {
-        if(!m_Reply) {
-            return false;
-        }
-        if(m_Reply->type == REDIS_REPLY_ERROR) {
-            return false;
-        }
+        if(!m_Reply) { return false; }
+        if(m_Reply->type == REDIS_REPLY_ERROR) { return false; }
         return true;
     }
 
     int RedisReply::Type() const 
     {
-        if(m_Reply) {
-            return m_Reply->type;
-        }
+        if(m_Reply) { return m_Reply->type; }
         return REDIS_ERR;
     }
 
@@ -54,12 +48,8 @@ namespace db
 
     std::string RedisReply::ErrorMsg() const
     {
-        if(!m_Reply) {
-            return "Reply Is Null Pointer";
-        }
-        if(m_Reply->type != REDIS_REPLY_ERROR) {
-            return "Reply Type Is Not REDIS_REPLY_ERROR";
-        }
+        if(!m_Reply) { return "Reply Is Null Pointer"; }
+        if(m_Reply->type != REDIS_REPLY_ERROR) { return "Reply Type Is Not REDIS_REPLY_ERROR"; }
         return std::string(m_Reply->str);
     }
 
@@ -116,6 +106,34 @@ namespace db
                 std::string k(m_Reply->element[i]->str);
                 std::string v(m_Reply->element[i + 1]->str);
                 val->insert(std::make_pair(k, v));
+                i += 2;
+            }
+        }
+        return true;
+    }
+
+    bool RedisReply::ParseZSet(std::vector<std::string>* val)
+    {
+        if(!val || !m_Reply) { return false; }
+        if( m_Reply->type != REDIS_REPLY_ARRAY ) { return false; }
+        assert(m_Reply->elements);
+        for(int i = 0 ; i < m_Reply->elements; ++i) {
+            val->push_back(m_Reply->element[i]->str);
+        }
+        return true;
+    }
+
+    bool RedisReply::ParseZSetWithScore(RedisReply::ZSetWithScoreResult* val)
+    {
+        if(!val || !m_Reply) { return false; }
+        if(m_Reply->type != REDIS_REPLY_ARRAY ) { return false; }
+        if(m_Reply->elements % 2 != 0) { return false; }
+        for(int i = 0 ; i < m_Reply->elements; ) {
+            if(i + 1 < m_Reply->elements) {
+                std::string k(m_Reply->element[i]->str);
+                std::string v(m_Reply->element[i + 1]->str);
+                val->Members.push_back(k);
+                val->Scores.push_back(v);
                 i += 2;
             }
         }
