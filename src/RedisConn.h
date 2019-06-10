@@ -352,6 +352,22 @@ namespace db
 
         int   zrem(const Key& key, const std::string& member);
 
+    public:
+
+        bool Expire(const Key& key, int nSeconds);
+
+        bool ExpireAt(const Key& key, long nTimeStamp);
+
+        int  TTL(const Key& key);
+
+        bool Persist(const Key& key);
+
+        bool PExpire(const Key& key, long nMillsec);
+
+        bool PExpireAt(const Key& key, long nTimeStamp);
+
+        long PTTL(const Key& key);
+
     private:
 
         redisContext* m_RedisContext;

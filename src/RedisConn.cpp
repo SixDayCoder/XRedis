@@ -501,4 +501,57 @@ namespace db
         REDIS_COMMIT_THREE_PARAM_COMMAND(fmt, key.c_str(), min, max);
         return reply.Integer();
     }
+
+    bool RedisConn::Expire(const Key& key, int nSeconds)
+    {
+        if(nSeconds < 0) { return false; }
+        const char* fmt = "expire %s %d";
+        REDIS_COMMIT_TWO_PARAM_COMMAND(fmt, key.c_str(), nSeconds);
+        return reply.Integer() > 0;
+    }
+
+    bool RedisConn::ExpireAt(const Key& key, long nTimeStamp)
+    {
+        if(nTimeStamp < 0) { return false; }
+        const char* fmt = "expireat %s %lld";
+        REDIS_COMMIT_TWO_PARAM_COMMAND(fmt, key.c_str(), nTimeStamp);
+        return reply.Integer() > 0;
+    }
+
+    int  RedisConn::TTL(const Key& key)
+    {
+        const char* fmt = "ttl %s";
+        REDIS_COMMIT_ONE_PARAM_COMMAND(fmt, key.c_str());
+        return reply.Integer();
+    }
+
+    bool  RedisConn::Persist(const Key& key)
+    {
+        const char* fmt = "persist %s";
+        REDIS_COMMIT_ONE_PARAM_COMMAND(fmt, key.c_str());
+        return reply.Integer() > 0;
+    }
+
+    bool  RedisConn::PExpire(const Key& key, long nMillsec)
+    {
+        if(nMillsec < 0) { return false; }
+        const char* fmt = "pexpire %s %lld";
+        REDIS_COMMIT_TWO_PARAM_COMMAND(fmt, key.c_str(), nMillsec);
+        return reply.Integer() > 0;
+    }
+
+    bool RedisConn::PExpireAt(const Key& key, long nTimeStamp)
+    {
+        if(nTimeStamp < 0) { return false; }
+        const char* fmt = "expireat %s %lld";
+        REDIS_COMMIT_TWO_PARAM_COMMAND(fmt, key.c_str(), nTimeStamp);
+        return reply.Integer() > 0;
+    }
+
+    long RedisConn::PTTL(const Key& key)
+    {
+        const char* fmt = "pttl %s";
+        REDIS_COMMIT_ONE_PARAM_COMMAND(fmt, key.c_str());
+        return reply.Integer();
+    }
 }

@@ -51,7 +51,7 @@ namespace db
 
         int  Type() const;
 
-        int  Integer() const;
+        long long  Integer() const;
 
         std::string ErrorMsg() const;
         

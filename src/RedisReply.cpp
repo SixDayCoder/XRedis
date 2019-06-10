@@ -36,7 +36,7 @@ namespace db
         return REDIS_ERR;
     }
 
-    int RedisReply::Integer() const
+    long long RedisReply::Integer() const
     {
         if(m_Reply) {
             if(m_Reply->type == REDIS_REPLY_INTEGER) {
