@@ -368,6 +368,16 @@ namespace db
 
         long PTTL(const Key& key);
 
+        bool Exists(const Key& key);
+
+        bool SelectDB(int nDBIndex);
+
+        bool ConfigGet(const Key& key, RedisReply::PairResult* result);
+
+        long DBSize();
+
+        bool Time(long* timestamp, long* eplaseUSec);
+
     private:
 
         redisContext* m_RedisContext;

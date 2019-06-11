@@ -19,6 +19,7 @@ namespace db
 
         using ZSetResult = std::vector<std::string>;
 
+
         struct ZSetWithScoreResult
         {
             std::vector<std::string> Members;
@@ -34,6 +35,16 @@ namespace db
             void clear() {
                 Members.clear();
                 Scores.clear();
+            }
+        };
+
+        struct PairResult
+        {
+            std::string Key;
+            std::string Val;
+            void clear() {
+                Key.clear();
+                Val.clear();
             }
         };   
 
@@ -72,6 +83,8 @@ namespace db
         bool ParseZSet(std::vector<std::string>* val);
 
         bool ParseZSetWithScore(ZSetWithScoreResult* val);
+
+        bool ParsePairResult(PairResult* result);
 
     private:
 

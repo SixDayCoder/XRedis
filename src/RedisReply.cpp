@@ -139,4 +139,21 @@ namespace db
         }
         return true;
     }
+
+    bool RedisReply::ParsePairResult(PairResult* result)
+    {
+        if(!result || !m_Reply) { return false; }
+        if(m_Reply->type != REDIS_REPLY_ARRAY ) { return false; }
+        if(m_Reply->elements % 2 != 0) { return false; }
+        for(int i = 0 ; i < m_Reply->elements; ) {
+            if(i + 1 < m_Reply->elements) {
+                std::string k(m_Reply->element[i]->str);
+                std::string v(m_Reply->element[i + 1]->str);
+                result->Key = k;
+                result->Val = v;
+                break;
+            }
+        }
+        return true;
+    }
 }

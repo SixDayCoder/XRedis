@@ -8,6 +8,12 @@ using namespace std;
 
 namespace db
 {
+    #define REDIS_COMMIT_ZERO_PARAM_COMMAND(fmt)               \
+        char command[MAX_COMMAND_SIZE] = { 0 };                        \
+        int  size = snprintf(command, MAX_COMMAND_SIZE, fmt); \
+        assert(size < MAX_COMMAND_SIZE);                               \
+        RedisReply reply(redisCommand(m_RedisContext, command));       \
+
     #define REDIS_COMMIT_ONE_PARAM_COMMAND(fmt, param_1)               \
         char command[MAX_COMMAND_SIZE] = { 0 };                        \
         int  size = snprintf(command, MAX_COMMAND_SIZE, fmt, param_1); \
@@ -553,5 +559,50 @@ namespace db
         const char* fmt = "pttl %s";
         REDIS_COMMIT_ONE_PARAM_COMMAND(fmt, key.c_str());
         return reply.Integer();
+    }
+
+    bool RedisConn::Exists(const Key& key)
+    {
+        const char* fmt = "exists %s";
+        REDIS_COMMIT_ONE_PARAM_COMMAND(fmt, key.c_str());
+        return reply.Integer() > 0;
+    }
+
+    bool RedisConn::SelectDB(int nDBIndex)
+    {
+        RedisReply::PairResult result;
+        if(!ConfigGet("databases", &result)) { return false; }
+        if(nDBIndex >= std::stoi(result.Val)) { return false; }
+        if(nDBIndex < 0) { return false; }
+        const char* fmt = "select %d";
+        REDIS_COMMIT_ONE_PARAM_COMMAND(fmt, nDBIndex);
+        return reply.IsVaild();
+    }
+
+    bool RedisConn::ConfigGet(const Key& key, RedisReply::PairResult* result)
+    {
+        if(!result) { return false; }
+        const char* fmt = "config get %s";
+        REDIS_COMMIT_ONE_PARAM_COMMAND(fmt, key.c_str());
+        return reply.ParsePairResult(result);
+    }
+
+    long RedisConn::DBSize()
+    {
+        const char* fmt = "dbsize";
+        REDIS_COMMIT_ZERO_PARAM_COMMAND(fmt);
+        return reply.Integer();
+    }
+
+    bool RedisConn::Time(long* timestamp, long* eplaseUSec)
+    {
+        if(!timestamp || !eplaseUSec) { return false ;}
+        RedisReply::PairResult result;
+        const char* fmt = "time";
+        REDIS_COMMIT_ZERO_PARAM_COMMAND(fmt);
+        reply.ParsePairResult(&result);
+        *timestamp = stol(result.Key);
+        *eplaseUSec = stol(result.Val);
+        return reply.IsVaild();
     }
 }
